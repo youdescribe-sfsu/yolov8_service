@@ -1,0 +1,15 @@
+node_modules/
+**_frames/
+**_files/
+.env
+tts_cloud_key.json
+.DS_Store
+__pycache__/
+package-lock.json
+**_env/
+**.log
+**/.idea
+**/.venv
+venv
+pipeline_logs/
+object_detection_service.log
