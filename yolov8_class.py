@@ -2,6 +2,7 @@ import json
 import time
 from ultralytics import YOLO
 import re
+from yolo_service_types import ObjectDetectionResult
 
 class ObjectDetectionProcessor:
     def __init__(self, model_path='yolov8m.pt', cuda_device=2):
@@ -25,7 +26,7 @@ class ObjectDetectionProcessor:
                 detected_object['box']['x2'],
                 detected_object['box']['y2']
             )
-            return name, confidence, box
+            return ObjectDetectionResult(name=name, confidence=confidence, box=list(box))
         except KeyError as e:
             print(f"KeyError: {str(e)} in detected_object")
             return None
@@ -65,7 +66,7 @@ class ObjectDetectionProcessor:
     def process_single_file(self, input_file):
         try:
             results = self.model.predict(source=[input_file], save_txt=True, device=self.cuda_device)
-            if( len(results) > 0 and results[0].file_path == input_file):
+            if( len(results) > 0 and results[0].path == input_file):
                 processed_objects = self.process_results_and_sort_by_filepath(results)
                 return processed_objects[0]['confidences']
             else:

@@ -1,159 +1,17 @@
 import logging
 from fastapi import FastAPI
 from fastapi import HTTPException
-from pydantic import BaseModel
 from yolov8_class import ObjectDetectionProcessor
-from typing import List
-from pydantic import BaseModel
-import uvicorn
-import argparse
+import os
+from yolo_service_types import SingleFileRequest, BatchFolderRequest, SingleFileResponse, BatchFolderResponse
+
+
 # Set up logging
 logging.basicConfig(filename="object_detection_service.log", level=logging.INFO)
 
 app = FastAPI()
-objectDetectionProcessor = None
-
-
-class SingleFileRequest(BaseModel):
-    filename: str
-
-
-class BatchFolderRequest(BaseModel):
-    folder_path: str
-
-
-class ObjectDetectionResult(BaseModel):
-    name: str
-    confidence: float
-    box: List[int]
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"name": "person", "confidence": 0.95, "box": [10, 20, 100, 200]}
-            ]
-        }
-    }
-
-
-class SingleFileResponse(BaseModel):
-    status: str
-    results: List[ObjectDetectionResult]
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "status": "success",
-                    "results": [
-                        {
-                            "name": "person",
-                            "confidence": 0.95,
-                            "box": [10, 20, 100, 200],
-                        },
-                        {
-                            "name": "car",
-                            "confidence": 0.85,
-                            "box": [50, 60, 150, 250],
-                        },
-                    ],
-                }
-            ]
-        }
-    }
-
-
-class BatchFolderConfidence(BaseModel):
-    name: str
-    confidence: float
-    box: List[int]
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"name": "person", "confidence": 0.95, "box": [10, 20, 100, 200]}
-            ]
-        }
-    }
-
-
-class BatchFolderResult(BaseModel):
-    file_path: str
-    frame_number: int
-    confidences: List[BatchFolderConfidence]
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "file_path": "/path/to/folder/image1.jpg",
-                    "frame_number": 1,
-                    "confidences": [
-                        {
-                            "name": "person",
-                            "confidence": 0.95,
-                            "box": [10, 20, 100, 200],
-                        },
-                        {
-                            "name": "car",
-                            "confidence": 0.85,
-                            "box": [50, 60, 150, 250],
-                        },
-                    ],
-                }
-            ]
-        }
-    }
-
-
-class BatchFolderResponse(BaseModel):
-    status: str
-    results: List[BatchFolderResult]
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "status": "success",
-                    "results": [
-                        {
-                            "file_path": "/path/to/folder/image1.jpg",
-                            "frame_number": 1,
-                            "confidences": [
-                                {
-                                    "name": "person",
-                                    "confidence": 0.95,
-                                    "box": [10, 20, 100, 200],
-                                },
-                                {
-                                    "name": "car",
-                                    "confidence": 0.85,
-                                    "box": [50, 60, 150, 250],
-                                },
-                            ],
-                        },
-                        {
-                            "file_path": "/path/to/folder/image2.jpg",
-                            "frame_number": 2,
-                            "confidences": [
-                                {
-                                    "name": "person",
-                                    "confidence": 0.90,
-                                    "box": [20, 30, 110, 210],
-                                },
-                                {
-                                    "name": "car",
-                                    "confidence": 0.80,
-                                    "box": [60, 70, 160, 260],
-                                },
-                            ],
-                        },
-                    ],
-                }
-            ]
-        }
-    }
-
+YOLO_CUDA_DEVICE = int(os.getenv('YOLO_CUDA_DEVICE', 2))  # Use environment variable, or default to 2
+objectDetectionProcessor = ObjectDetectionProcessor(cuda_device=YOLO_CUDA_DEVICE)
 
 @app.post("/detect_single_file", response_model=SingleFileResponse)
 async def detect_single_file(request: SingleFileRequest):
@@ -181,11 +39,7 @@ async def detect_batch_folder(request: BatchFolderRequest):
         raise HTTPException(status_code=500, detail="An error occurred")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Object Detection Service")
-    parser.add_argument("--port", type=int, default=8000, help="Port number")
-    parser.add_argument("--cuda_device", type=int, default=2, help="CUDA device number")
-    objectDetectionProcessor = ObjectDetectionProcessor(cuda_device=2)
-    args = parser.parse_args()
-    
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+# if __name__ == "__main__":
+#     YOLO_CUDA_DEVICE = int(os.getenv('YOLO_CUDA_DEVICE', 2))  # Use environment variable, or default to 2
+#     objectDetectionProcessor = ObjectDetectionProcessor(cuda_device=YOLO_CUDA_DEVICE)
+#     # YOLO_CUDA_DEVICE=3 uvicorn app:app --host 0.0.0.0 --port 8087 --workers 4
