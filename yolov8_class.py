@@ -4,8 +4,9 @@ from ultralytics import YOLO
 import re
 
 class ObjectDetectionProcessor:
-    def __init__(self, model_path='yolov8m.pt'):
+    def __init__(self, model_path='yolov8m.pt', cuda_device=2):
         self.model = YOLO(model_path)
+        self.cuda_device = cuda_device
 
     def extract_frame_number(self, file_path):
         match = re.search(r'frame_(\d+).jpg', file_path)
@@ -54,7 +55,7 @@ class ObjectDetectionProcessor:
 
     def process_directory(self, input_folder):
         try:
-            results = self.model.predict(source=input_folder, save_txt=True, device=2)
+            results = self.model.predict(source=input_folder, save_txt=True, device=self.cuda_device)
             processed_objects = self.process_results_and_sort_by_filepath(results)
             return processed_objects
         except Exception as e:
@@ -63,7 +64,7 @@ class ObjectDetectionProcessor:
 
     def process_single_file(self, input_file):
         try:
-            results = self.model.predict(source=[input_file], save_txt=True, device=2)
+            results = self.model.predict(source=[input_file], save_txt=True, device=self.cuda_device)
             if( len(results) > 0 and results[0].file_path == input_file):
                 processed_objects = self.process_results_and_sort_by_filepath(results)
                 return processed_objects[0]['confidences']

@@ -13,3 +13,4 @@ package-lock.json
 venv
 pipeline_logs/
 object_detection_service.log
+*.pt
