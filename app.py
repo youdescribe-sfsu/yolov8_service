@@ -17,9 +17,10 @@ objectDetectionProcessor = ObjectDetectionProcessor(cuda_device=YOLO_CUDA_DEVICE
 async def detect_single_file(request: SingleFileRequest):
     try:
         filename = request.filename
+        threshold = request.threshold
         if not filename:
             raise HTTPException(status_code=400, detail="No filename in the request")
-        results = objectDetectionProcessor.process_single_file(filename)
+        results = objectDetectionProcessor.process_single_file(filename,conf_threshold=threshold)
         return {"status": "success", "results": results}
     except Exception as e:
         logging.error(f"Error in SingleFileDetectionHandler: {str(e)}")
@@ -30,9 +31,10 @@ async def detect_single_file(request: SingleFileRequest):
 async def detect_batch_folder(request: BatchFolderRequest):
     try:
         folder_path = request.folder_path
+        threshold = request.threshold
         if not folder_path:
             raise HTTPException(status_code=400, detail="No folder_path in the request")
-        results = objectDetectionProcessor.process_directory(folder_path)
+        results = objectDetectionProcessor.process_directory(folder_path,conf_threshold=threshold)
         return {"status": "success", "results": results}
     except Exception as e:
         logging.error(f"Error in BatchFolderDetectionHandler: {str(e)}")

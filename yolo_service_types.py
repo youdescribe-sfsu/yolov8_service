@@ -1,12 +1,26 @@
 from pydantic import BaseModel
 from typing import List
 
+
 class SingleFileRequest(BaseModel):
     filename: str
+    threshold: float
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{"filename": "/path/to/folder/image1.jpg", "threshold": 0.05}]
+        }
+    }
 
 
 class BatchFolderRequest(BaseModel):
     folder_path: str
+    threshold: float
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{"folder_path": "/path/to/folder/*", "threshold": 0.05}]
+        }
+    }
 
 
 class ObjectDetectionResult(BaseModel):
@@ -140,4 +154,3 @@ class BatchFolderResponse(BaseModel):
             ]
         }
     }
-
