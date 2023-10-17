@@ -63,6 +63,16 @@ class ObjectDetectionProcessor:
             print(f"An error occurred: {str(e)}")
             return []
 
+    def process_multiple_files(self, input_files, conf_threshold=0.25):
+        try:
+            results = self.model.predict(source=input_files,conf=conf_threshold, save_txt=False, device=self.cuda_device)
+            processed_objects = self.process_results_and_sort_by_filepath(results)
+            return processed_objects
+            
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return []
+
     def process_single_file(self, input_file, conf_threshold=0.25):
         try:
             results = self.model.predict(source=[input_file],conf=conf_threshold, save_txt=False, device=self.cuda_device)

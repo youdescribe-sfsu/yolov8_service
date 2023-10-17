@@ -11,6 +11,15 @@ class SingleFileRequest(BaseModel):
         }
     }
 
+class MultipleFileRequest(BaseModel):
+    files_path: List[str]
+    threshold: float
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{"files_path": ["/path/to/folder/image1.jpg","/path/to/folder/image2.jpg"], "threshold": 0.05}]
+        }
+    }
 
 class BatchFolderRequest(BaseModel):
     folder_path: str
