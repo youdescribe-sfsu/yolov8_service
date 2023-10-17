@@ -49,7 +49,13 @@ This endpoint accepts a POST request with the following parameters:
 **Example request:**
 
 ```sh
-curl -X POST -d "filename=/path/to/single/image.jpg" http://localhost:8080/detect_single_file
+curl --location 'localhost:8000//detect_single_file' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data '{
+  "filename": "/path/to/folder/image1.jpg",
+  "threshold": "0.25"
+}'
 ```
 
 **Example response:**
@@ -72,6 +78,70 @@ curl -X POST -d "filename=/path/to/single/image.jpg" http://localhost:8080/detec
 }
 ```
 
+### `detect_multiple_files`
+
+This endpoint accepts a POST request with the following parameters:
+
+- `files_path`: The path to the image file to be processed.
+
+**Example request:**
+
+```sh
+curl --location 'localhost:8000//detect_multiple_files' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data '{
+  "files_path": [
+    "/path/to/folder/image1.jpg",
+    "/path/to/folder/image1.jpg"
+  ],
+  "threshold": "0.25"
+}'
+```
+
+**Example response:**
+
+```json
+{
+  "status": "success",
+  "results": [
+    {
+      "file_path": "/path/to/folder/image1.jpg",
+      "frame_number": 1,
+      "confidences": [
+        {
+          "name": "person",
+          "confidence": 0.95,
+          "box": [10, 20, 100, 200]
+        },
+        {
+          "name": "car",
+          "confidence": 0.85,
+          "box": [50, 60, 150, 250]
+        }
+      ]
+    },
+    {
+      "file_path": "/path/to/folder/image2.jpg",
+      "frame_number": 2,
+      "confidences": [
+        {
+          "name": "person",
+          "confidence": 0.90,
+          "box": [20, 30, 110, 210]
+        },
+        {
+          "name": "car",
+          "confidence": 0.80,
+          "box": [60, 70, 160, 260]
+        }
+      ]
+    }
+  ]
+}
+```
+
+
 ### `detect_batch_folder`
 
 This endpoint accepts a POST request with the following parameters:
@@ -81,7 +151,13 @@ This endpoint accepts a POST request with the following parameters:
 **Example request:**
 
 ```sh
-curl -X POST -d "folder_path=/path/to/folder" http://localhost:8080/detect_batch_folder
+curl --location 'localhost:8000//detect_batch_folder' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data '{
+  "folder_path": "/path/to/folder/",
+  "threshold": "0.25"
+}'
 ```
 
 **Example response:**
