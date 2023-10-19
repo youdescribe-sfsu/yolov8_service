@@ -13,7 +13,7 @@ To use this service, you need to install the following dependencies:
 You can install the dependencies by running the following command:
 
 ```sh
-pip install -r requirements.ts
+pip install -r requirements.txt
 ```
 
 ## Running the Service
