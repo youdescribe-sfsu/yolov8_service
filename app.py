@@ -38,7 +38,8 @@ async def detect_batch_folder(request: BatchFolderRequest):
         return {"status": "success", "results": results}
     except Exception as e:
         logging.error(f"Error in BatchFolderDetectionHandler: {str(e)}")
-        raise HTTPException(status_code=500, detail="An error occurred")
+        logging.error(f"Request data: {request.dict()}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @app.post("/detect_multiple_files", response_model=BatchFolderResponse)
 async def detect_multiple_files(request: MultipleFileRequest):
