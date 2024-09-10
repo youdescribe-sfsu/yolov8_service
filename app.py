@@ -7,8 +7,8 @@ from yolo_service_types import MultipleFileRequest, SingleFileRequest, BatchFold
 
 
 # Set up logging
-logging.basicConfig(filename="object_detection_service.log", level=logging.INFO)
-
+logging.basicConfig(filename="object_detection_service.log", level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
 app = FastAPI()
 YOLO_CUDA_DEVICE = int(os.getenv('YOLO_CUDA_DEVICE', 2))  # Use environment variable, or default to 2
 objectDetectionProcessor = ObjectDetectionProcessor(cuda_device=YOLO_CUDA_DEVICE)
@@ -29,16 +29,29 @@ async def detect_single_file(request: SingleFileRequest):
 
 @app.post("/detect_batch_folder", response_model=BatchFolderResponse)
 async def detect_batch_folder(request: BatchFolderRequest):
+    logging.info(f"Received batch folder request: {request.dict()}")
+    print(f"Received batch folder request: {request.dict()}")
     try:
         folder_path = request.folder_path
         threshold = request.threshold
         if not folder_path:
+            logging.error("No folder_path in the request")
             raise HTTPException(status_code=400, detail="No folder_path in the request")
-        results = objectDetectionProcessor.process_directory(folder_path,conf_threshold=threshold)
+        if not os.path.isdir(folder_path):
+            logging.error(f"Invalid folder path: {folder_path}")
+            raise HTTPException(status_code=400, detail=f"Invalid folder path: {folder_path}")
+
+        logging.info(f"Processing directory: {folder_path} with threshold: {threshold}")
+        print(f"Processing directory: {folder_path} with threshold: {threshold}")
+        results = objectDetectionProcessor.process_directory(folder_path, conf_threshold=threshold)
+        logging.info(f"Processed {len(results)} images")
+        print(f"Processed {len(results)} images")
         return {"status": "success", "results": results}
     except Exception as e:
         logging.error(f"Error in BatchFolderDetectionHandler: {str(e)}")
         logging.error(f"Request data: {request.dict()}")
+        print(f"Error in BatchFolderDetectionHandler: {str(e)}")
+        print(f"Request data: {request.dict()}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @app.post("/detect_multiple_files", response_model=BatchFolderResponse)

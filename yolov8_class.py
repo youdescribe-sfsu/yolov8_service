@@ -6,8 +6,10 @@ from yolo_service_types import ObjectDetectionResult
 
 class ObjectDetectionProcessor:
     def __init__(self, model_path='yolov8m.pt', cuda_device=2):
+        print(f"Initializing ObjectDetectionProcessor with model: {model_path} on CUDA device: {cuda_device}")
         self.model = YOLO(model_path)
         self.cuda_device = cuda_device
+        print("ObjectDetectionProcessor initialized successfully")
 
     def extract_frame_number(self, file_path):
         match = re.search(r'frame_(\d+).jpg', file_path)
@@ -32,6 +34,7 @@ class ObjectDetectionProcessor:
             return None
 
     def process_results_and_sort_by_filepath(self, results):
+        print(f"Processing and sorting results for {len(results)} images")
         processed_results = []
 
         for result in results:
@@ -49,18 +52,22 @@ class ObjectDetectionProcessor:
                 })
 
             except Exception as e:
-                print(f"An error occurred: {str(e)}")
+                print(f"An error occurred while processing result: {str(e)}")
 
         sorted_results = sorted(processed_results, key=lambda x: x.get('frame_number', 0))
+        print(f"Sorted {len(sorted_results)} results")
         return sorted_results
 
     def process_directory(self, input_folder, conf_threshold=0.25):
+        print(f"Processing directory: {input_folder} with confidence threshold: {conf_threshold}")
         try:
-            results = self.model.predict(source=input_folder,conf=conf_threshold, save_txt=False, device=self.cuda_device,verbose=False)
+            results = self.model.predict(source=input_folder, conf=conf_threshold, save_txt=False, device=self.cuda_device, verbose=False)
+            print(f"YOLO model prediction completed. Processing results...")
             processed_objects = self.process_results_and_sort_by_filepath(results)
+            print(f"Processed {len(processed_objects)} objects")
             return processed_objects
         except Exception as e:
-            print(f"An error occurred: {str(e)}")
+            print(f"An error occurred in process_directory: {str(e)}")
             return []
 
     def process_multiple_files(self, input_files, conf_threshold=0.25):
