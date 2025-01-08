@@ -40,7 +40,7 @@ class ObjectDetectionProcessor:
         for result in results:
             try:
                 path = result.path
-                json_obj = json.loads(result.tojson())
+                json_obj = json.loads(result.to_json())
 
                 return_arr = [self.process_object(detected_object) for detected_object in json_obj]
                 frame_number = self.extract_frame_number(path)
