@@ -61,7 +61,16 @@ class ObjectDetectionProcessor:
     def process_directory(self, input_folder, conf_threshold=0.25):
         print(f"Processing directory: {input_folder} with confidence threshold: {conf_threshold}")
         try:
-            results = self.model.predict(source=input_folder, conf=conf_threshold, save_txt=False, device=self.cuda_device, verbose=False)
+            # Enable streaming mode to prevent memory accumulation
+            results = self.model.predict(
+                source=input_folder,
+                conf=conf_threshold,
+                save_txt=False,
+                device=self.cuda_device,
+                verbose=False,
+                stream=True
+            )
+
             print(f"YOLO model prediction completed. Processing results...")
             processed_objects = self.process_results_and_sort_by_filepath(results)
             print(f"Processed {len(processed_objects)} objects")
@@ -72,19 +81,32 @@ class ObjectDetectionProcessor:
 
     def process_multiple_files(self, input_files, conf_threshold=0.25):
         try:
-            print("input_files :: ",input_files)
-            results = self.model.predict(source=input_files,conf=conf_threshold, save_txt=False, device=self.cuda_device,verbose=False)
+            print("input_files :: ", input_files)
+            results = self.model.predict(
+                source=input_files,
+                conf=conf_threshold,
+                save_txt=False,
+                device=self.cuda_device,
+                verbose=False,
+                stream=True
+            )
             processed_objects = self.process_results_and_sort_by_filepath(results)
             return processed_objects
-            
+
         except Exception as e:
             print(f"An error occurred: {str(e)}")
             return []
 
     def process_single_file(self, input_file, conf_threshold=0.25):
         try:
-            results = self.model.predict(source=[input_file],conf=conf_threshold, save_txt=False, device=self.cuda_device)
-            if( len(results) > 0 and results[0].path == input_file):
+            results = self.model.predict(
+                source=[input_file],
+                conf=conf_threshold,
+                save_txt=False,
+                device=self.cuda_device,
+                stream=True
+            )
+            if (len(results) > 0 and results[0].path == input_file):
                 processed_objects = self.process_results_and_sort_by_filepath(results)
                 return processed_objects[0]['confidences']
             else:
