@@ -34,13 +34,18 @@ class ObjectDetectionProcessor:
             return None
 
     def process_results_and_sort_by_filepath(self, results):
-        print(f"Processing and sorting results for {len(results)} images")
+        """
+        Process and sort results from YOLO model, supporting both lists and generators.
+        """
         processed_results = []
+        results_count = 0  # We'll count as we go instead of using len()
 
+        # Process each result, whether results is a list or generator
         for result in results:
+            results_count += 1  # Increment counter
             try:
                 path = result.path
-                json_obj = json.loads(result.to_json())
+                json_obj = json.loads(result.tojson())
 
                 return_arr = [self.process_object(detected_object) for detected_object in json_obj]
                 frame_number = self.extract_frame_number(path)
@@ -54,8 +59,12 @@ class ObjectDetectionProcessor:
             except Exception as e:
                 print(f"An error occurred while processing result: {str(e)}")
 
+        # Sort the processed results by frame number
         sorted_results = sorted(processed_results, key=lambda x: x.get('frame_number', 0))
+
+        print(f"Processed {results_count} images")
         print(f"Sorted {len(sorted_results)} results")
+
         return sorted_results
 
     def process_directory(self, input_folder, conf_threshold=0.25):
